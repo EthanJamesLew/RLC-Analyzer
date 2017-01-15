@@ -1,0 +1,11 @@
+Metrics,Value,Units
+R,40,Ohms
+L,0.25,Henries
+C,2.5e-05,Farads
+RLC Type,Parallel,
+Neper Frequency,500,rad/s
+Resonant Radian Frequency,400,rad/s
+Damped Frequency,0+300i,rad/s
+s1,-800,rad/s
+s2,-200,rad/s
+Damping,Overdamped,
