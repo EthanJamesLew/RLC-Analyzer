@@ -158,10 +158,8 @@ function save_state_csv(filename, pathname, table, col)
 myTable =  cell2table(table, 'VariableNames', col);
 writetable(myTable,[strcat(pathname,filename)],'WriteRowNames',true);
 
- 
- 
-function draw_graph(hObject, eventdata, handles)
-if(handles.tabs.SelectedTab == handles.graph_tab)
+
+function draw_axes(hObject, eventdata, handles)
 warning('off','all')
 syms v(t)
 C=handles.capacitance;
@@ -177,12 +175,10 @@ switch handles.current_circuit;
     case handles.parallel
         x0 = handles.v0;
         dx0 = (-handles.il+handles.v0/R)/C;
-        [V] = odeToVectorField(-C.*diff(v,2)==1./R.*diff(v)+1./L.*v);
-        t = 'Voltage vs Time';
-        u = 'Voltage (V)';
-end 
-
-
+end
+[V] = odeToVectorField(-C.*diff(v,2)==1./R.*diff(v)+1./L.*v);
+t = 'Voltage vs Time';
+u = 'Voltage (V)';
 M = matlabFunction(V,'vars', {'t','Y'});
 tmax = 20.*(L.*C)^.5;
 sol = ode45(M, [0 tmax],[x0;dx0]);
@@ -191,7 +187,11 @@ fplot(handles.graph, y, [0, tmax], 'LineWidth',3);
 title(handles.graph, t);
 xlabel(handles.graph, 'Time (s)');
 ylabel(handles.graph, u);
-end
+ 
+function draw_graph(hObject, eventdata, handles)
+if(handles.tabs.SelectedTab == handles.graph_tab)
+    draw_axes(hObject, eventdata, handles)
+end 
 
 
 function varargout = rlc_analyzer_OutputFcn(hObject, eventdata, handles) 
@@ -372,14 +372,7 @@ update_model(hObject, eventdata, handles);
 update_view(hObject, eventdata, handles);
 
 
-% --- Executes during object creation, after setting all properties.
 function ic_edit_text_1_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to ic_edit_text_1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
@@ -395,3 +388,12 @@ function ic_edit_text_2_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+function menu_file_print_Callback(hObject, eventdata, handles)
+set(0,'DefaultFigureVisible','off');
+draw_axes(hObject, eventdata, handles);
+h = figure;
+copyobj(handles.graph,h);
+set(0,'DefaultFigureVisible','on');
+printpreview(h);
