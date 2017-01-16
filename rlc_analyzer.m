@@ -59,6 +59,7 @@ update_view(hObject, eventdata, handles);
 
 draw_circuit(hObject, eventdata, handles);
 
+
 function update_model(hObject, eventdata, handles)
 handles.resonant_radian_frequency = 1/(handles.inductance*handles.capacitance)^.5;
 if handles.current_circuit == handles.series
@@ -154,6 +155,7 @@ end
 handles.results_table.Data =  handles.results_data;
 guidata(hObject, handles);
 
+
 function save_state_csv(filename, pathname, table, col)
 myTable =  cell2table(table, 'VariableNames', col);
 writetable(myTable,[strcat(pathname,filename)],'WriteRowNames',true);
@@ -174,7 +176,7 @@ switch handles.current_circuit;
         u = 'Current (A)';
     case handles.parallel
         x0 = handles.v0;
-        dx0 = (-handles.il+handles.v0/R)/C;
+        dx0 = (-handles.il-handles.v0/R)/C;
         t = 'Voltage vs Time';
         u = 'Voltage (V)';
 end
@@ -187,7 +189,8 @@ fplot(handles.graph, y, [0, tmax], 'LineWidth',3);
 title(handles.graph, t);
 xlabel(handles.graph, 'Time (s)');
 ylabel(handles.graph, u);
- 
+
+
 function draw_graph(hObject, eventdata, handles)
 if(handles.tabs.SelectedTab == handles.graph_tab)
     draw_axes(hObject, eventdata, handles)
@@ -206,6 +209,7 @@ function menu_save_Callback(hObject, eventdata, handles)
 if(~(FileName==0))
 save_state_csv(FileName, PathName, handles.results_data, handles.results_table.ColumnName);
 end
+
 
 function menu_load_Callback(hObject, eventdata, handles)
 [FileName,PathName] = uigetfile('*.csv','Select an RCL csv');
@@ -248,9 +252,6 @@ draw_circuit(hObject, eventdata, handles);
 update_model(hObject, eventdata, handles);
 update_view(hObject, eventdata, handles);
 end
-
-
-
 
 
 function select_menu_Callback(hObject, eventdata, handles)
@@ -347,6 +348,7 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
+
 function menu_about_Callback(hObject, eventdata, handles)
 uiwait(msgbox({'Made by Team StEthan for ENGR 222 Winter 2017';'';'Testing and Logistics:                       Stephen Poanessa';'Programming and Documentation:   Ethan Lew';'';'My software never has bugs. It just develops random features.';'';'""Legacy code" often differs from its suggested alternative by actually working and scaling."-Bjarne Stroustrup, C++ Creator' } ,'About','modal'));
 
@@ -366,7 +368,6 @@ function menu_file_exit_Callback(hObject, eventdata, handles)
 delete(handles.figure1);
 
 
-
 function ic_edit_text_1_Callback(hObject, eventdata, handles)
 update_model(hObject, eventdata, handles);
 update_view(hObject, eventdata, handles);
@@ -376,7 +377,6 @@ function ic_edit_text_1_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
 
 
 function ic_edit_text_2_Callback(hObject, eventdata, handles)
