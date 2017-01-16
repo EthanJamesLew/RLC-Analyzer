@@ -9,3 +9,5 @@ Damped Frequency,0+300i,rad/s
 s1,-800,rad/s
 s2,-200,rad/s
 Damping,Overdamped,
+Initial Voltage ,75,V
+Inductor Current,0.1,A

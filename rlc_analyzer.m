@@ -34,6 +34,13 @@ handles.underdamped = 0;
 handles.overdamped = 1;
 handles.critdamped = 2;
 
+%%IC's
+handles.v0 = 0;
+handles.il = 0;
+
+handles.i0 = 0;
+handles.vc = 0;
+
 handles.resistance =str2double(get(handles.R_text_edit, 'String'));
 handles.inductance = str2double(get(handles.L_text_edit, 'String'))/10^3;
 handles.capacitance = str2double(get(handles.C_text_edit, 'String'))/10^6;
@@ -50,7 +57,6 @@ update_model(hObject, eventdata, handles);
 update_view(hObject, eventdata, handles);
 
 draw_circuit(hObject, eventdata, handles);
-
 
 function update_model(hObject, eventdata, handles)
 handles.resonant_radian_frequency = 1/(handles.inductance*handles.capacitance)^.5;
@@ -73,11 +79,36 @@ if isreal(handles.s1) && isreal(handles.s2)
 else
     handles.damp_type = handles.underdamped;
 end
+
+switch handles.current_circuit;
+    case handles.series
+        handles.i0 = str2double(get(handles.ic_edit_text_1, 'String'));
+        handles.vc = str2double(get(handles.ic_edit_text_2, 'String'));
+    case handles.parallel
+        handles.v0 = str2double(get(handles.ic_edit_text_1, 'String'));
+        handles.il = str2double(get(handles.ic_edit_text_2, 'String'));
+        
+end
+
 guidata(hObject, handles);
 
 
 function update_view(hObject, eventdata, handles)
 handles = guidata(hObject);
+
+switch handles.current_circuit;
+    case handles.series
+        set(handles.ic_name_1, 'String', 'I0:')
+        set(handles.ic_units_1, 'String', 'A')
+        set(handles.ic_name_2, 'String', 'VC:')
+        set(handles.ic_units_2, 'String', 'V')
+    case handles.parallel
+        set(handles.ic_name_1, 'String', 'V0:')
+        set(handles.ic_units_1, 'String', 'V')
+        set(handles.ic_name_2, 'String', 'IL:')
+        set(handles.ic_units_2, 'String', 'A')
+end
+
 draw_results(hObject, eventdata, handles);
 draw_graph(hObject, eventdata, handles);
 
@@ -111,6 +142,13 @@ handles.results_data = {
                     's1', handles.s2, 'rad/s';...
                     's2',handles.s1, 'rad/s';...
                     'Damping', damping, ''};
+                
+switch handles.current_circuit;
+    case handles.series
+        handles.results_data = cat(1,handles.results_data, {'Initial Current ', handles.i0, 'A';'Capacitor Voltage',handles.vc,'V'});
+    case handles.parallel
+        handles.results_data = cat(1,handles.results_data, {'Initial Voltage ', handles.v0, 'V';'Inductor Current',handles.il,'A'});
+end       
                
 handles.results_table.Data =  handles.results_data;
 guidata(hObject, handles);
@@ -151,8 +189,8 @@ function menu_load_Callback(hObject, eventdata, handles)
 if(~(FileName==0))
 temp = readtable(strcat(PathName, FileName));
 handles.resistance = str2double(temp.Value{1});
-handles.capacitance = str2double(temp.Value{2});
-handles.inductance = str2double(temp.Value{3});
+handles.capacitance = str2double(temp.Value{3});
+handles.inductance = str2double(temp.Value{2});
 switch temp.Value{4};
     case 'Series'
         handles.current_circuit = handles.series;
@@ -160,13 +198,29 @@ switch temp.Value{4};
         handles.current_circuit = handles.parallel;
 end
 set(handles.select_menu, 'Value', handles.current_circuit+1);
-guidata(hObject, handles);
-handles = guidata(hObject);
 
 set(handles.R_text_edit,'string',num2str(handles.resistance));
 set(handles.L_text_edit,'string',num2str(handles.inductance));
 set(handles.C_text_edit,'string',num2str(handles.capacitance));
 
+if(height(temp)>10)
+    switch handles.current_circuit;
+    case handles.series
+        handles.i0 = str2double(temp.Value{11});
+        handles.vc = str2double(temp.Value{12});
+        
+        set(handles.ic_edit_text_1,'string',num2str(handles.i0));
+        set(handles.ic_edit_text_2,'string',num2str(handles.vc));
+    case handles.parallel
+        handles.v0 = str2double(temp.Value{11});
+        handles.il = str2double(temp.Value{12});
+        
+        set(handles.ic_edit_text_1,'string',num2str(handles.v0));
+        set(handles.ic_edit_text_2,'string',num2str(handles.il));
+    end  
+end
+guidata(hObject, handles);
+handles = guidata(hObject);
 draw_circuit(hObject, eventdata, handles);
 update_model(hObject, eventdata, handles);
 update_view(hObject, eventdata, handles);
@@ -287,3 +341,41 @@ web('https://github.com/EthanJamesLew/RLC_Analyzer', '-browser');
 
 function menu_file_exit_Callback(hObject, eventdata, handles)
 delete(handles.figure1);
+
+
+
+function ic_edit_text_1_Callback(hObject, eventdata, handles)
+update_model(hObject, eventdata, handles);
+update_view(hObject, eventdata, handles);
+
+
+% --- Executes during object creation, after setting all properties.
+function ic_edit_text_1_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to ic_edit_text_1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function ic_edit_text_2_Callback(hObject, eventdata, handles)
+update_model(hObject, eventdata, handles);
+update_view(hObject, eventdata, handles);
+
+
+% --- Executes during object creation, after setting all properties.
+function ic_edit_text_2_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to ic_edit_text_2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

@@ -9,3 +9,5 @@ Damped Frequency,240000,rad/s
 s1,-320000+-240000i,rad/s
 s2,-320000+240000i,rad/s
 Damping,Underdamped,
+Initial Current ,0.075,A
+Capacitor Voltage,-16,V

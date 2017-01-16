@@ -9,3 +9,5 @@ Damped Frequency,0+300i,rad/s
 s1,-800,rad/s
 s2,-200,rad/s
 Damping,Overdamped,
+Initial Current ,1,A
+Capacitor Voltage,60,V

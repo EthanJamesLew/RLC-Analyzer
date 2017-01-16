@@ -9,3 +9,5 @@ Damped Frequency,0,rad/s
 s1,-800,rad/s
 s2,-800,rad/s
 Damping,Critically Damped,
+Initial Voltage ,60,V
+Inductor Current,0,A
