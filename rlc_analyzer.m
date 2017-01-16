@@ -142,11 +142,13 @@ function menu_file_Callback(hObject, eventdata, handles)
 
 function menu_save_Callback(hObject, eventdata, handles)
 [FileName,PathName] = uiputfile('*.csv','Save RLC As');
+if(~(FileName==0))
 save_state_csv(FileName, PathName, handles.results_data, handles.results_table.ColumnName);
-
+end
 
 function menu_load_Callback(hObject, eventdata, handles)
 [FileName,PathName] = uigetfile('*.csv','Select an RCL csv');
+if(~(FileName==0))
 temp = readtable(strcat(PathName, FileName));
 handles.resistance = str2double(temp.Value{1});
 handles.capacitance = str2double(temp.Value{2});
@@ -160,9 +162,16 @@ end
 set(handles.select_menu, 'Value', handles.current_circuit+1);
 guidata(hObject, handles);
 handles = guidata(hObject);
+
+set(handles.R_text_edit,'string',num2str(handles.resistance));
+set(handles.L_text_edit,'string',num2str(handles.inductance));
+set(handles.C_text_edit,'string',num2str(handles.capacitance));
+
 draw_circuit(hObject, eventdata, handles);
 update_model(hObject, eventdata, handles);
 update_view(hObject, eventdata, handles);
+end
+
 
 
 
@@ -261,40 +270,20 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-% --------------------------------------------------------------------
 function menu_about_Callback(hObject, eventdata, handles)
-% hObject    handle to menu_about (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 uiwait(msgbox({'Made by Team StEthan for ENGR 222 Winter 2017';'';'Testing and Logistics:                       Stephen Poanessa';'Programming and Documentation:   Ethan Lew';'';'My software never has bugs. It just develops random features.';'';'""Legacy code" often differs from its suggested alternative by actually working and scaling."-Bjarne Stroustrup, C++ Creator' } ,'About','modal'));
 
 
-% --------------------------------------------------------------------
 function menu_help_Callback(hObject, eventdata, handles)
-% hObject    handle to menu_help (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 
 
-% --------------------------------------------------------------------
 function menu_help_bug_Callback(hObject, eventdata, handles)
-% hObject    handle to menu_help_bug (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 web('https://github.com/EthanJamesLew/RLC_Analyzer/issues', '-browser');
 
 
-% --------------------------------------------------------------------
 function menu_help_git_Callback(hObject, eventdata, handles)
-% hObject    handle to menu_help_git (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 web('https://github.com/EthanJamesLew/RLC_Analyzer', '-browser');
 
 
-% --------------------------------------------------------------------
 function menu_file_exit_Callback(hObject, eventdata, handles)
-% hObject    handle to menu_file_exit (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 delete(handles.figure1);
