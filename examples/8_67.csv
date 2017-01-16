@@ -1,0 +1,11 @@
+Metrics,Value,Units
+R,0,Ohms
+L,1e-09,Henries
+C,6.33e-12,Farads
+RLC Type,Series,
+Neper Frequency,0,rad/s
+Resonant Radian Frequency,12568925295.9975,rad/s
+Damped Frequency,12568925295.9975,rad/s
+s1,-0+-12568925295.9975i,rad/s
+s2,0+12568925295.9975i,rad/s
+Damping,Underdamped,
