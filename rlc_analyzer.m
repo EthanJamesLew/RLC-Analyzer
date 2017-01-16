@@ -175,10 +175,10 @@ switch handles.current_circuit;
     case handles.parallel
         x0 = handles.v0;
         dx0 = (-handles.il+handles.v0/R)/C;
+        t = 'Voltage vs Time';
+        u = 'Voltage (V)';
 end
 [V] = odeToVectorField(-C.*diff(v,2)==1./R.*diff(v)+1./L.*v);
-t = 'Voltage vs Time';
-u = 'Voltage (V)';
 M = matlabFunction(V,'vars', {'t','Y'});
 tmax = 20.*(L.*C)^.5;
 sol = ode45(M, [0 tmax],[x0;dx0]);
