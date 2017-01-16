@@ -47,7 +47,8 @@ handles.capacitance = str2double(get(handles.C_text_edit, 'String'))/10^6;
 
 handles.tabs = uitabgroup(handles.tab_container);
 handles.results_tab = uitab(handles.tabs,'Title','Results');
-handles.graph_tab = uitab(handles.tabs,'Title','Graph');
+handles.graph_tab = uitab(handles.tabs,'Title','Graph', 'ButtonDownFcn', @(hObject,eventdata)update_view(hObject,eventdata));
+
 handles.results_table =  uitable(handles.results_tab, 'ColumnWidth',{200 200 100}, 'Position',[1 0 500 550]);
 
 handles.results_table.ColumnName = {'Metrics','Value','Units'};
@@ -157,17 +158,39 @@ function save_state_csv(filename, pathname, table, col)
 myTable =  cell2table(table, 'VariableNames', col);
 writetable(myTable,[strcat(pathname,filename)],'WriteRowNames',true);
 
-
+ 
+ 
 function draw_graph(hObject, eventdata, handles)
-f = handles.damped_frequency;
-T = 1/f;
-if isreal(T)
-t = 0:T/10:15*T;
-y = exp(-handles.neper_frequency*t).*(cos(handles.damped_frequency*t)+sin(handles.damped_frequency*t));
-p = plot(handles.graph, t, y);
-p.LineWidth = 3;
-else
-    cla(handles.graph);
+if(handles.tabs.SelectedTab == handles.graph_tab)
+warning('off','all')
+syms v(t)
+C=handles.capacitance;
+R=handles.resistance;
+L=handles.inductance;
+switch handles.current_circuit;
+    case handles.series
+        x0 = handles.i0;
+        dx0 = (-handles.vc-handles.i0*R)/L;
+        [V] = odeToVectorField(-R.*diff(v,2)==L*diff(v)+1./C.*v);
+        t = 'Current vs Time';
+        u = 'Current (A)';
+    case handles.parallel
+        x0 = handles.v0;
+        dx0 = (-handles.il+handles.v0/R)/C;
+        [V] = odeToVectorField(-C.*diff(v,2)==1./R.*diff(v)+1./L.*v);
+        t = 'Voltage vs Time';
+        u = 'Voltage (V)';
+end 
+
+
+M = matlabFunction(V,'vars', {'t','Y'});
+tmax = 20.*(L.*C)^.5;
+sol = ode45(M, [0 tmax],[x0;dx0]);
+y = @(x)deval(sol,x,1);
+fplot(handles.graph, y, [0, tmax], 'LineWidth',3);
+title(handles.graph, t);
+xlabel(handles.graph, 'Time (s)');
+ylabel(handles.graph, u);
 end
 
 
@@ -368,14 +391,7 @@ update_model(hObject, eventdata, handles);
 update_view(hObject, eventdata, handles);
 
 
-% --- Executes during object creation, after setting all properties.
 function ic_edit_text_2_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to ic_edit_text_2 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
