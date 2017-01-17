@@ -52,7 +52,7 @@ handles.graph_tab = uitab(handles.tabs,'Title','Graph', 'ButtonDownFcn', @(hObje
 handles.results_table =  uitable(handles.results_tab, 'ColumnWidth',{200 200 100}, 'Position',[1 0 500 550]);
 
 handles.results_table.ColumnName = {'Metrics','Value','Units'};
-handles.graph = axes(handles.graph_tab);
+handles.graph = axes('Parent',handles.graph_tab);
 
 update_model(hObject, eventdata, handles);
 update_view(hObject, eventdata, handles);
@@ -177,15 +177,16 @@ switch handles.current_circuit;
     case handles.parallel
         x0 = handles.v0;
         dx0 = (-handles.il-handles.v0/R)/C;
+        [V] = odeToVectorField(-C.*diff(v,2)==1./R.*diff(v)+1./L.*v);
         t = 'Voltage vs Time';
         u = 'Voltage (V)';
 end
-[V] = odeToVectorField(-C.*diff(v,2)==1./R.*diff(v)+1./L.*v);
 M = matlabFunction(V,'vars', {'t','Y'});
 tmax = 20.*(L.*C)^.5;
 sol = ode45(M, [0 tmax],[x0;dx0]);
 y = @(x)deval(sol,x,1);
-fplot(handles.graph, y, [0, tmax], 'LineWidth',3);
+[x, y] = fplot(y, [0, tmax]);
+plot(handles.graph, x,y,'linewidth',2);
 title(handles.graph, t);
 xlabel(handles.graph, 'Time (s)');
 ylabel(handles.graph, u);
