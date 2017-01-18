@@ -171,25 +171,30 @@ switch handles.current_circuit;
     case handles.series
         x0 = handles.i0;
         dx0 = (-handles.vc-handles.i0*R)/L;
-        [V] = odeToVectorField(-R.*diff(v,2)==L*diff(v)+1./C.*v);
+        eqn = -R*diff(v,t,2) == L*diff(v)+1./C.*v;
+        Dv = diff(v,t);
+        ySol(t) = dsolve(eqn, [v(0)==x0 Dv(0)==dx0]);
         t = 'Current vs Time';
         u = 'Current (A)';
     case handles.parallel
         x0 = handles.v0;
         dx0 = (-handles.il-handles.v0/R)/C;
-        [V] = odeToVectorField(-C.*diff(v,2)==1./R.*diff(v)+1./L.*v);
+        eqn = -C.*diff(v,t,2)==1./R.*diff(v)+1./L.*v;
+        Dv = diff(v,t);
+        ySol(t) = dsolve(eqn, [v(0)==x0 Dv(0)==dx0]);
         t = 'Voltage vs Time';
         u = 'Voltage (V)';
 end
-M = matlabFunction(V,'vars', {'t','Y'});
 tmax = 20.*(L.*C)^.5;
-sol = ode45(M, [0 tmax],[x0;dx0]);
-y = @(x)deval(sol,x,1);
-[x, y] = fplot(y, [0, tmax]);
+
+x = 0:tmax/50:tmax;
+y = ySol(x);
+hold on
 plot(handles.graph, x,y,'linewidth',2);
-title(handles.graph, t);
+title(handles.graph, {t, char(vpa(ySol, 3))});
 xlabel(handles.graph, 'Time (s)');
 ylabel(handles.graph, u);
+hold off
 
 
 function draw_graph(hObject, eventdata, handles)
