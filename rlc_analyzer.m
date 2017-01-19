@@ -16,8 +16,8 @@ else
     gui_mainfcn(gui_State, varargin{:});
 end
 
-
 function rlc_analyzer_OpeningFcn(hObject, eventdata, handles, varargin)
+%profile on;
 handles.output = hObject;
 handles.series = 0;
 handles.parallel = 1;
@@ -161,6 +161,7 @@ myTable =  cell2table(table, 'VariableNames', col);
 writetable(myTable,[strcat(pathname,filename)],'WriteRowNames',true);
 
 
+
 function draw_axes(hObject, eventdata, handles)
 warning('off','all')
 syms v(t)
@@ -176,7 +177,6 @@ switch handles.current_circuit;
         ySol(t) = dsolve(eqn, [v(0)==x0 Dv(0)==dx0]);
         t = 'i(t)=';
         u = 'Current (A)';
-        tmax = sqrt(handles.neper_frequency)/150;
     case handles.parallel
         x0 = handles.v0;
         dx0 = (-handles.il-handles.v0/R)/C;
@@ -194,6 +194,7 @@ x = 0:tmax/200:tmax;
 y = ySol(x);
 hold on
 plot(handles.graph, x,y,'linewidth',2);
+xlim(handles.graph, [0 tmax]);
 n = vpa((ySol), 3);
 d1 = digits(4);
 title(handles.graph, { ['$' t latex(simplify(n)) '$']}, 'Interpreter', 'latex');
@@ -378,6 +379,7 @@ web('https://github.com/EthanJamesLew/RLC_Analyzer', '-browser');
 
 function menu_file_exit_Callback(hObject, eventdata, handles)
 delete(handles.figure1);
+%profile viewer;
 
 
 function ic_edit_text_1_Callback(hObject, eventdata, handles)
