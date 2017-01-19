@@ -171,7 +171,7 @@ switch handles.current_circuit;
     case handles.series
         x0 = handles.i0;
         dx0 = (-handles.vc-handles.i0*R)/L;
-        eqn = -R*diff(v,t,2) == L*diff(v)+1./C.*v;
+        eqn = -diff(v,t,2) == R/L*diff(v)+1./(L*C).*v;
         Dv = diff(v,t);
         ySol(t) = dsolve(eqn, [v(0)==x0 Dv(0)==dx0]);
         t = 'i(t)=';
@@ -185,10 +185,9 @@ switch handles.current_circuit;
         ySol(t) = dsolve(eqn, [v(0)==x0 Dv(0)==dx0]);
         t = 'v(t)=';
         u = 'Voltage (V)';
-        tmax = 20.*1/handles.resonant_radian_frequency;
 end
 
-
+tmax = 20.*1/handles.resonant_radian_frequency;
 
 x = 0:tmax/200:tmax; 
 
@@ -197,7 +196,7 @@ hold on
 plot(handles.graph, x,y,'linewidth',2);
 n = vpa((ySol), 3);
 d1 = digits(4);
-title(handles.graph, { ['$' t latex(n) '$']}, 'Interpreter', 'latex');
+title(handles.graph, { ['$' t latex(simplify(n)) '$']}, 'Interpreter', 'latex');
 digits(d1);
 xlabel(handles.graph, 'Time (s)');
 ylabel(handles.graph, u);
