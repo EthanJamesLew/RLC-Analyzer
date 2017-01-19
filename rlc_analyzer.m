@@ -176,6 +176,7 @@ switch handles.current_circuit;
         ySol(t) = dsolve(eqn, [v(0)==x0 Dv(0)==dx0]);
         t = 'Current vs Time';
         u = 'Current (A)';
+        tmax = sqrt(handles.neper_frequency)/150;
     case handles.parallel
         x0 = handles.v0;
         dx0 = (-handles.il-handles.v0/R)/C;
@@ -184,10 +185,13 @@ switch handles.current_circuit;
         ySol(t) = dsolve(eqn, [v(0)==x0 Dv(0)==dx0]);
         t = 'Voltage vs Time';
         u = 'Voltage (V)';
+        tmax = 20.*1/handles.resonant_radian_frequency;
 end
-tmax = 20.*(L.*C)^.5;
 
-x = 0:tmax/50:tmax;
+
+
+x = 0:tmax/200:tmax; 
+
 y = ySol(x);
 hold on
 plot(handles.graph, x,y,'linewidth',2);
