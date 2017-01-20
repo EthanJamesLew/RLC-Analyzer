@@ -188,13 +188,46 @@ switch handles.current_circuit;
 end
 
 tmax = 20.*1/handles.resonant_radian_frequency;
+x = 0:tmax/100:tmax; 
 
-x = 0:tmax/200:tmax; 
+A= double(coeffs(simplify(vpa(ySol))));
+ySol = vpa(ySol);
 
-y = ySol(x);
-hold on
-plot(handles.graph, x,y,'linewidth',2);
+y = double(ySol(x));
+
+indexmin = find(min(y) == y);
+xmin = x(indexmin);
+ymin = y(indexmin);
+
+indexmax = find(max(y) == y);
+xmax = x(indexmax);
+ymax = y(indexmax);
+
+switch handles.damp_type;
+case handles.overdamped % User selects peaks.
+   plot(handles.graph, x, y, 'linewidth', 2);
+case handles.underdamped % User selects peaks.
+   plot(handles.graph, x, y, x, A*exp(-handles.neper_frequency*x),x, -A*exp(-handles.neper_frequency*x), 'linewidth', 2);
+case handles.critdamped % User selects peaks.
+   plot(handles.graph, x, y, 'linewidth', 2);
+end
+
+hold on;
+axes(handles.graph);
+
 xlim(handles.graph, [0 tmax]);
+ylim(handles.graph, [1.3*ymin 1.3*ymax])
+
+if (xmin > 0 & xmin < tmax)
+strmin = ['',num2str(ymin)];
+text(xmin,ymin,strmin);
+end
+
+if (xmax > 0 & xmax < tmax)
+strmax = ['',num2str(ymax)];
+text(xmax,ymax,strmax);
+end
+
 n = vpa((ySol), 3);
 d1 = digits(4);
 title(handles.graph, { ['$' t latex(simplify(n)) '$']}, 'Interpreter', 'latex');
