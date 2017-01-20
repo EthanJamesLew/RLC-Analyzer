@@ -163,7 +163,7 @@ writetable(myTable,[strcat(pathname,filename)],'WriteRowNames',true);
 
 
 function draw_axes(hObject, eventdata, handles)
-warning('off','all')
+cla(handles.graph);
 syms v(t)
 C=handles.capacitance;
 R=handles.resistance;
@@ -203,29 +203,34 @@ indexmax = find(max(y) == y);
 xmax = x(indexmax);
 ymax = y(indexmax);
 
+axes(handles.graph);
+hold(handles.graph,'on');
 switch handles.damp_type;
 case handles.overdamped % User selects peaks.
    plot(handles.graph, x, y, 'linewidth', 2);
 case handles.underdamped % User selects peaks.
-   plot(handles.graph, x, y, x, A*exp(-handles.neper_frequency*x),x, -A*exp(-handles.neper_frequency*x), 'linewidth', 2);
+   plot(handles.graph, x, A*exp(-handles.neper_frequency*x), '--r');
+   plot(handles.graph, x, -A*exp(-handles.neper_frequency*x), '--r');
+    plot(x, y, 'linewidth', 2);
 case handles.critdamped % User selects peaks.
    plot(handles.graph, x, y, 'linewidth', 2);
 end
-
-hold on;
-axes(handles.graph);
 
 xlim(handles.graph, [0 tmax]);
 ylim(handles.graph, [1.3*ymin 1.3*ymax])
 
 if (xmin > 0 & xmin < tmax)
-strmin = ['',num2str(ymin)];
-text(xmin,ymin,strmin);
+strmin = ['',num2str(round(ymin, 3))];
+text(xmin,1.1*ymin,strmin);
+plot(xmin, ymin, 'o', 'LineWidth',1,'MarkerEdgeColor',...
+    [ 0    0.4470    0.7410],'MarkerFaceColor',[ 0    0.4470    0.7410],'MarkerSize',6);
 end
 
 if (xmax > 0 & xmax < tmax)
-strmax = ['',num2str(ymax)];
-text(xmax,ymax,strmax);
+strmax = ['',num2str(round(ymax, 3))];
+text(xmax,1.1*ymax,strmax);
+plot(xmax, ymax, 'o', 'LineWidth',1,'MarkerEdgeColor',...
+    [ 0    0.4470    0.7410],'MarkerFaceColor',[ 0    0.4470    0.7410],'MarkerSize',6);
 end
 
 n = vpa((ySol), 3);
@@ -234,7 +239,7 @@ title(handles.graph, { ['$' t latex(simplify(n)) '$']}, 'Interpreter', 'latex');
 digits(d1);
 xlabel(handles.graph, 'Time (s)');
 ylabel(handles.graph, u);
-hold off
+hold(handles.graph,'off');
 
 
 function draw_graph(hObject, eventdata, handles)
