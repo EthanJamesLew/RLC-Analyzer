@@ -425,6 +425,11 @@ delete(handles.figure1);
 
 
 function ic_edit_text_1_Callback(hObject, eventdata, handles)
+val = str2double(get(hObject, 'String'));
+if isnan(val)
+    set(hObject, 'String', 0);
+    errordlg('Input must be a number','Error');
+end
 update_model(hObject, eventdata, handles);
 update_view(hObject, eventdata, handles);
 
@@ -436,6 +441,11 @@ end
 
 
 function ic_edit_text_2_Callback(hObject, eventdata, handles)
+val = str2double(get(hObject, 'String'));
+if isnan(val)
+    set(hObject, 'String', 0);
+    errordlg('Input must be a number','Error');
+end
 update_model(hObject, eventdata, handles);
 update_view(hObject, eventdata, handles);
 
