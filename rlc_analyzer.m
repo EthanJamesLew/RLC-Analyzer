@@ -160,8 +160,6 @@ function save_state_csv(filename, pathname, table, col)
 myTable =  cell2table(table, 'VariableNames', col);
 writetable(myTable,[strcat(pathname,filename)],'WriteRowNames',true);
 
-
-
 function draw_axes(hObject, eventdata, handles)
 cla(handles.graph);
 syms v(t)
@@ -199,9 +197,10 @@ indexmin = find(min(y) == y);
 xmin = x(indexmin);
 ymin = y(indexmin);
 
-indexmax = find(max(y) == y);
-xmax = x(indexmax);
-ymax = y(indexmax);
+ymin = min(y);
+ymax = max(y);
+[pks_max,locs_max] = findpeaks(y) ;
+[pks_min, locs_min] =findpeaks(ymax-y); 
 
 axes(handles.graph);
 hold(handles.graph,'on');
@@ -217,29 +216,33 @@ case handles.critdamped % User selects peaks.
 end
 
 xlim(handles.graph, [0 tmax]);
-incs = (ymax-ymin)/10;
-ylim(handles.graph, [ymin-incs ymax+incs])
+incs = (ymax-ymin)/15;
+ylim(handles.graph, [ymin-incs ymax+incs]);
 
-if (xmin > 0 & xmin < tmax)
-strmin = ['',num2str(round(ymin, 3))];
-text(xmin,1.1*ymin,strmin);
-plot(xmin, ymin, 'o', 'LineWidth',1,'MarkerEdgeColor',...
+for idx = 1:numel(locs_max)
+    loc = locs_max(idx);
+    strmax = ['',num2str(round(y(loc), 3))];
+    text(x(loc),incs/2+y(loc),strmax);
+    plot(x(loc), y(loc), 'o', 'LineWidth',1,'MarkerEdgeColor',...
     [ 0    0.4470    0.7410],'MarkerFaceColor',[ 0    0.4470    0.7410],'MarkerSize',6);
+    
 end
 
-if (xmax > 0 & xmax < tmax)
-strmax = ['',num2str(round(ymax, 3))];
-text(xmax,1.1*ymax,strmax);
-plot(xmax, ymax, 'o', 'LineWidth',1,'MarkerEdgeColor',...
+for idx = 1:numel(locs_min)
+    loc = locs_min(idx);
+    strmax = ['',num2str(round(y(loc), 3))];
+    text(x(loc),-incs/2+y(loc),strmax);
+    plot(x(loc), y(loc), 'o', 'LineWidth',1,'MarkerEdgeColor',...
     [ 0    0.4470    0.7410],'MarkerFaceColor',[ 0    0.4470    0.7410],'MarkerSize',6);
+    
 end
 
 n = vpa((ySol), 3);
 d1 = digits(4);
 title(handles.graph, { ['$' t latex(simplify(n)) '$']}, 'Interpreter', 'latex');
 digits(d1);
-xlabel(handles.graph, 'Time (s)');
-ylabel(handles.graph, u);
+xlabel(handles.graph, 'Time (s)', 'Interpreter', 'latex');
+ylabel(handles.graph, u, 'Interpreter', 'latex');
 hold(handles.graph,'off');
 
 
