@@ -49,7 +49,7 @@ handles.tabs = uitabgroup(handles.tab_container);
 handles.results_tab = uitab(handles.tabs,'Title','Results');
 handles.graph_tab = uitab(handles.tabs,'Title','Graph', 'ButtonDownFcn', @(hObject,eventdata)update_view(hObject,eventdata));
 
-handles.results_table =  uitable(handles.results_tab, 'ColumnWidth',{200 200 100}, 'Position',[1 0 500 550]);
+handles.results_table =  uitable(handles.results_tab,'units', 'normalized', 'Position',[0 0 1 1]);
 
 handles.results_table.ColumnName = {'Metrics','Value','Units'};
 handles.graph = axes('Parent',handles.graph_tab);
@@ -187,7 +187,7 @@ switch handles.current_circuit;
         u = 'Voltage (V)';
 end
 
-tmax = 20.*1/handles.resonant_radian_frequency;
+tmax = 20/handles.resonant_radian_frequency;
 x = 0:tmax/100:tmax; 
 
 A= double(coeffs(simplify(vpa(ySol))));
@@ -217,7 +217,8 @@ case handles.critdamped % User selects peaks.
 end
 
 xlim(handles.graph, [0 tmax]);
-ylim(handles.graph, [1.3*ymin 1.3*ymax])
+incs = (ymax-ymin)/10;
+ylim(handles.graph, [ymin-incs ymax+incs])
 
 if (xmin > 0 & xmin < tmax)
 strmin = ['',num2str(round(ymin, 3))];
@@ -449,3 +450,23 @@ h = figure;
 copyobj(handles.graph,h);
 set(0,'DefaultFigureVisible','on');
 printpreview(h);
+
+function left_panel_SizeChangedFcn(hObject, eventdata, handles)
+
+function figure1_SizeChangedFcn(hObject, eventdata, handles)
+handles = guidata(hObject);
+set(handles.results_tab, 'units', 'pixels');
+t = get(handles.results_tab, 'Position');
+t_width = t(3)/3;
+set(handles.results_table, 'ColumnWidth', {t_width,t_width,t_width});
+
+
+set(handles.figure1, 'units', 'pixels');
+set(handles.left_panel, 'units', 'pixels');
+set(handles.tab_container, 'units', 'pixels');
+t = get(handles.figure1, 'Position');
+if(t(4) > 585 & t(3) > 201)
+set(handles.left_panel, 'Position', [0 t(4)-585 201 585]);
+set(handles.tab_container, 'Position', [201 0 t(3)-201 t(4)]);
+end
+guidata(hObject, handles);
