@@ -1,4 +1,5 @@
 function varargout = rlc_analyzer(varargin)
+%instantiate gui singleton
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
@@ -18,33 +19,43 @@ end
 
 function rlc_analyzer_OpeningFcn(hObject, eventdata, handles, varargin)
 %profile on;
+
+%%initialize application variables
 handles.output = hObject;
+
+%current_circuit assumes a state of series or parallel
 handles.series = 0;
 handles.parallel = 1;
 handles.current_circuit = handles.series;
 
+%metrics used
 handles.neper_frequency = 0;
 handles.resonant_radian_frequency = 0;
 handles.damped_frequency = 0;
 handles.s1 = 0;
 handles.s2 = 0;
 
+%damp_type assumes a state of underdamped, overdamped or critdamped
 handles.damp_type = -1;
 handles.underdamped = 0;
 handles.overdamped = 1;
 handles.critdamped = 2;
 
-%%IC's
+%initial conditions
 handles.v0 = 0;
 handles.il = 0;
 
 handles.i0 = 0;
 handles.vc = 0;
 
+handles.xf = 0;
+
+%RLC parameters
 handles.resistance =str2double(get(handles.R_text_edit, 'String'));
 handles.inductance = str2double(get(handles.L_text_edit, 'String'))/10^3;
 handles.capacitance = str2double(get(handles.C_text_edit, 'String'))/10^6;
 
+%Build GUI that GUIDE doesn't support
 handles.tabs = uitabgroup(handles.tab_container);
 handles.results_tab = uitab(handles.tabs,'Title','Results');
 handles.graph_tab = uitab(handles.tabs,'Title','Graph', 'ButtonDownFcn', @(hObject,eventdata)update_view(hObject,eventdata));
@@ -54,6 +65,7 @@ handles.results_table =  uitable(handles.results_tab,'units', 'normalized', 'Pos
 handles.results_table.ColumnName = {'Metrics','Value','Units'};
 handles.graph = axes('Parent',handles.graph_tab);
 
+%Evaluate variables to models and draw views
 update_model(hObject, eventdata, handles);
 update_view(hObject, eventdata, handles);
 
@@ -61,6 +73,7 @@ draw_circuit(hObject, eventdata, handles);
 
 
 function update_model(hObject, eventdata, handles)
+%calculate frequencies and roots
 handles.resonant_radian_frequency = 1/(handles.inductance*handles.capacitance)^.5;
 if handles.current_circuit == handles.series
     handles.neper_frequency = handles.resistance /(2*handles.inductance);
@@ -72,6 +85,7 @@ handles.damped_frequency = (handles.resonant_radian_frequency^2 - handles.neper_
 handles.s1 = -handles.neper_frequency + (handles.neper_frequency^2 - handles.resonant_radian_frequency^2)^.5;
 handles.s2 = -handles.neper_frequency - (handles.neper_frequency^2 - handles.resonant_radian_frequency^2)^.5;
 
+%determine damp type
 if isreal(handles.s1) && isreal(handles.s2)
     if handles.s1 == handles.s2
         handles.damp_type = handles.critdamped;
@@ -82,6 +96,7 @@ else
     handles.damp_type = handles.underdamped;
 end
 
+%determine damp type
 switch handles.current_circuit;
     case handles.series
         handles.i0 = str2double(get(handles.ic_edit_text_1, 'String'));
@@ -92,30 +107,39 @@ switch handles.current_circuit;
         
 end
 
+handles.xf = str2double(get(handles.ic_edit_text_3, 'String'));
+
 guidata(hObject, handles);
 
 
 function update_view(hObject, eventdata, handles)
 handles = guidata(hObject);
 
+%render IC text
 switch handles.current_circuit;
     case handles.series
         set(handles.ic_name_1, 'String', 'I0:')
         set(handles.ic_units_1, 'String', 'A')
         set(handles.ic_name_2, 'String', 'VC:')
         set(handles.ic_units_2, 'String', 'V')
+        set(handles.ic_name_3, 'String', 'IF:')
+        set(handles.ic_units_3, 'String', 'A')
     case handles.parallel
         set(handles.ic_name_1, 'String', 'V0:')
         set(handles.ic_units_1, 'String', 'V')
         set(handles.ic_name_2, 'String', 'IL:')
         set(handles.ic_units_2, 'String', 'A')
+        set(handles.ic_name_3, 'String', 'VF:')
+        set(handles.ic_units_3, 'String', 'V')
 end
 
+%update states
 draw_results(hObject, eventdata, handles);
 draw_graph(hObject, eventdata, handles);
 
 
 function draw_results(hObject, eventdata, handles)
+%draws model to table view
 type = '';
 switch handles.current_circuit;
     case handles.series
@@ -124,13 +148,14 @@ switch handles.current_circuit;
         type = 'Parallel';
 end
 
+%Determine text for ciruit type cell
 damping = '';
 switch handles.damp_type;
-case handles.overdamped % User selects peaks.
+case handles.overdamped 
    damping = 'Overdamped';
-case handles.underdamped % User selects peaks.
+case handles.underdamped 
    damping = 'Underdamped';
-case handles.critdamped % User selects peaks.
+case handles.critdamped 
    damping = 'Critically Damped';
 end
 handles.results_data = {
@@ -170,7 +195,7 @@ switch handles.current_circuit;
     case handles.series
         x0 = handles.i0;
         dx0 = (-handles.vc-handles.i0*R)/L;
-        eqn = -diff(v,t,2) == R/L*diff(v)+1./(L*C).*v;
+        eqn = -L*diff(v,t,2)+ handles.xf/(C)== R*diff(v)+1./(C).*v;
         Dv = diff(v,t);
         ySol(t) = dsolve(eqn, [v(0)==x0 Dv(0)==dx0]);
         t = 'i(t)=';
@@ -178,18 +203,18 @@ switch handles.current_circuit;
     case handles.parallel
         x0 = handles.v0;
         dx0 = (-handles.il-handles.v0/R)/C;
-        eqn = -C.*diff(v,t,2)==1./R.*diff(v)+1./L.*v;
+        eqn = -C.*diff(v,t,2) + + handles.xf/(L)==1./R.*diff(v)+1./L.*v;
         Dv = diff(v,t);
         ySol(t) = dsolve(eqn, [v(0)==x0 Dv(0)==dx0]);
         t = 'v(t)=';
         u = 'Voltage (V)';
 end
-
 tmax = 20/handles.resonant_radian_frequency;
 x = 0:tmax/100:tmax; 
 
-A= double(coeffs(simplify(vpa(ySol))));
+
 ySol = vpa(ySol);
+A= double(coeffs(simplify(ySol)));
 
 y = double(ySol(x));
 
@@ -208,9 +233,9 @@ switch handles.damp_type;
 case handles.overdamped % User selects peaks.
    plot(handles.graph, x, y, 'linewidth', 2);
 case handles.underdamped % User selects peaks.
-   plot(handles.graph, x, A*exp(-handles.neper_frequency*x), '--r');
-   plot(handles.graph, x, -A*exp(-handles.neper_frequency*x), '--r');
-    plot(x, y, 'linewidth', 2);
+   %plot(handles.graph, x, A*exp(-handles.neper_frequency*x), '--r');
+   %plot(handles.graph, x, -A*exp(-handles.neper_frequency*x), '--r');
+   plot(x, y, 'linewidth', 2);
 case handles.critdamped % User selects peaks.
    plot(handles.graph, x, y, 'linewidth', 2);
 end
@@ -483,3 +508,19 @@ set(handles.left_panel, 'Position', [0 t(4)-585 201 585]);
 set(handles.tab_container, 'Position', [201 0 t(3)-201 t(4)]);
 end
 guidata(hObject, handles);
+
+
+
+function ic_edit_text_3_Callback(hObject, eventdata, handles)
+val = str2double(get(hObject, 'String'));
+if isnan(val)
+    set(hObject, 'String', 0);
+    errordlg('Input must be a number','Error');
+end
+update_model(hObject, eventdata, handles);
+update_view(hObject, eventdata, handles);
+
+function ic_edit_text_3_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
