@@ -172,11 +172,10 @@ handles.results_data = {
                 
 switch handles.current_circuit;
     case handles.series
-        handles.results_data = cat(1,handles.results_data, {'Initial Current ', handles.i0, 'A';'Capacitor Voltage',handles.vc,'V'});
+        handles.results_data = cat(1,handles.results_data, {'Initial Current ', handles.i0, 'A';'Capacitor Voltage',handles.vc,'V'; 'Final Current', handles.xf, 'A'});
     case handles.parallel
-        handles.results_data = cat(1,handles.results_data, {'Initial Voltage ', handles.v0, 'V';'Inductor Current',handles.il,'A'});
+        handles.results_data = cat(1,handles.results_data, {'Initial Voltage ', handles.v0, 'V';'Inductor Current',handles.il,'A';'Final Voltage', handles.xf, 'V'});
 end       
-               
 handles.results_table.Data =  handles.results_data;
 guidata(hObject, handles);
 
@@ -318,6 +317,7 @@ if(height(temp)>10)
         
         set(handles.ic_edit_text_1,'string',num2str(handles.i0));
         set(handles.ic_edit_text_2,'string',num2str(handles.vc));
+        
     case handles.parallel
         handles.v0 = str2double(temp.Value{11});
         handles.il = str2double(temp.Value{12});
@@ -326,6 +326,9 @@ if(height(temp)>10)
         set(handles.ic_edit_text_2,'string',num2str(handles.il));
     end  
 end
+handles.xf = str2double(temp.Value{13});
+set(handles.ic_edit_text_3,'string',num2str(handles.xf));
+
 guidata(hObject, handles);
 handles = guidata(hObject);
 draw_circuit(hObject, eventdata, handles);
