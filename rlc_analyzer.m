@@ -324,10 +324,12 @@ if(height(temp)>10)
         
         set(handles.ic_edit_text_1,'string',num2str(handles.v0));
         set(handles.ic_edit_text_2,'string',num2str(handles.il));
-    end  
-end
+    end 
+if(height(temp)>12)
 handles.xf = str2double(temp.Value{13});
 set(handles.ic_edit_text_3,'string',num2str(handles.xf));
+end
+end
 
 guidata(hObject, handles);
 handles = guidata(hObject);
