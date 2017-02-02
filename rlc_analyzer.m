@@ -254,7 +254,7 @@ end
 
 for idx = 1:numel(locs_min)
     loc = locs_min(idx);
-    strmax = ['',num2str(round(y(loc), 3))];
+    strmax = ['',num2str(y(loc))];
     text(x(loc),-incs/2+y(loc),strmax);
     plot(x(loc), y(loc), 'o', 'LineWidth',1,'MarkerEdgeColor',...
     [ 0    0.4470    0.7410],'MarkerFaceColor',[ 0    0.4470    0.7410],'MarkerSize',6);
